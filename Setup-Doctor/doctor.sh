@@ -18,6 +18,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SUITE_VERSION="$(cat "${SCRIPT_DIR}/../VERSION" 2>/dev/null || cat "${SCRIPT_DIR}/VERSION" 2>/dev/null || echo "1.0.0")"
 
 # Dynamic User & Target Home Lookup (Zero hardcoding, dual-root/user safe)
 TARGET_USER="${SUDO_USER:-$USER}"
@@ -94,7 +95,7 @@ fi
 # ---------------------------------------------------------------------------
 echo -e "${BOLD}${MAGENTA}"
 echo "=================================================================="
-echo "  Debian Dev Suite — Master Diagnostic Health Check"
+echo "  Debian Dev Suite (v${SUITE_VERSION}) — Master Diagnostic Health Check"
 echo "=================================================================="
 echo -e "${RESET}"
 

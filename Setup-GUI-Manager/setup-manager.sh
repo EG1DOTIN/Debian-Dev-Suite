@@ -21,6 +21,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SUITE_VERSION="$(cat "${REPO_ROOT}/VERSION" 2>/dev/null || cat "${SCRIPT_DIR}/VERSION" 2>/dev/null || echo "1.0.0")"
 TARGET_USER="${SUDO_USER:-$USER}"
 TARGET_HOME="$(getent passwd "$TARGET_USER" 2>/dev/null | cut -d: -f6 || echo "${HOME:-/home/$TARGET_USER}")"
 VENV_DIR="${REPO_ROOT}/.venv"
@@ -121,7 +122,7 @@ ensure_venv() {
 
 check_status() {
     echo -e "${BOLD}${CYAN}==================================================================${RESET}"
-    echo -e "${BOLD}     Debian Dev Suite GUI Manager — Diagnostic Health Check       ${RESET}"
+    echo -e "${BOLD}     Debian Dev Suite GUI Manager (v${SUITE_VERSION}) — Diagnostic Health Check       ${RESET}"
     echo -e "${BOLD}${CYAN}==================================================================${RESET}"
     echo
 

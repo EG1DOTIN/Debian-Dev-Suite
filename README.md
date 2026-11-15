@@ -1,18 +1,20 @@
-# Debian Dev Suite
+# Debian Dev Suite [![Version](https://img.shields.io/badge/version-v1.0.0-0284c7.svg?style=flat-square)](VERSION) [![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg?style=flat-square)](LICENSE) [![Telemetry: 0](https://img.shields.io/badge/telemetry-0%20(zero)-emerald.svg?style=flat-square)](#) [![Platform](https://img.shields.io/badge/platform-Debian%20%7C%20MX%20Linux%20%7C%20antiX-crimson.svg?style=flat-square)](#)
+
+> **Current Release:** `v1.0.0` • Single Source of Truth: [`VERSION`](VERSION)
 
 A modular, **ultra-lightweight, 100% open-source, secure**, and **privacy-focused (0 telemetry)** developer environment toolkit for **Debian, MX Linux, antiX, Ubuntu, Linux Mint, Devuan**, and all Debian-derived distributions.
 
 Designed to turn any machine—from ultra-resource-constrained legacy hardware (e.g., dual-core laptops with 2GB–3GB RAM) to modern multi-core workstations with dedicated GPUs—into a blisteringly fast, distraction-free development environment without the bloat of heavy desktop software.
 
 ```text
-  🪶 Ultra-Lightweight (0–50MB RAM)  •  🔓 100% Open-Source (FOSS)  •  🛡️ Secure by Design  •  🔒 Privacy-Focused (0 Telemetry)
+  🏷️ Version: v1.0.0  •  🪶 Ultra-Lightweight (0–50MB RAM)  •  🔓 100% Open-Source (FOSS)  •  🛡️ Secure by Design  •  🔒 Privacy-Focused (0 Telemetry)
 ```
 
 ---
 
 ## 1-Click Visual Control Center & System Doctor
 
-### 🖥️ Master GUI Manager
+### 🖥️ Master GUI Manager (`Debian Dev Suite Manager (v1.0.0)`)
 Launch the modern graphical control center to visually inspect all components, trigger 1-click installations or clean uninstalls, watch live shell commands stream in an embedded terminal, and inspect individual module diagnostics:
 
 ![Debian Dev Suite Master GUI Manager](Setup-GUI-Manager/gui-manager-preview.png)
@@ -109,6 +111,7 @@ Every tool in this repository is strictly audited against our four non-negotiabl
 
 ```text
 Debian-Dev-Suite/
+├── VERSION                                  # Single source of truth version definition (v1.0.0)
 ├── manager.sh                               # 1-Click root launcher for Master GUI Manager
 ├── doctor.sh                                # 1-Click root launcher for system & suite diagnostics
 ├── README.md                                # Master repository documentation & audit table

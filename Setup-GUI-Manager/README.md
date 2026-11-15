@@ -2,7 +2,7 @@
 
 Part of the **[Debian Dev Suite](https://github.com/)**.
 
-**Debian Dev Suite Manager** is a modern, high-performance, native graphical control center for managing your complete Debian/MX Linux development environment. It provides a visual dashboard to audit installed components, trigger one-click installations or clean uninstalls, watch live shell commands stream in an embedded terminal, and inspect detailed diagnostic health reports.
+**Debian Dev Suite Manager (v1.0.0)** is a modern, high-performance, native graphical control center for managing your complete Debian/MX Linux development environment. It provides a visual dashboard to audit installed components, trigger one-click installations or clean uninstalls, watch live shell commands stream in an embedded terminal, and inspect detailed diagnostic health reports.
 
 ![Debian Dev Suite GUI Manager](gui-manager-preview.png)
 

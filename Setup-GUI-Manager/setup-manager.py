@@ -54,6 +54,22 @@ except ImportError as e:
 # Dynamic Paths & Zero Hardcoding
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
+
+
+def load_suite_version() -> str:
+    """Load the single-source-of-truth suite version from the VERSION file."""
+    for candidate in [REPO_ROOT / "VERSION", SCRIPT_DIR / "VERSION"]:
+        if candidate.is_file():
+            try:
+                v = candidate.read_text(encoding="utf-8").strip()
+                if v:
+                    return v if v.startswith("v") else f"v{v}"
+            except Exception:
+                pass
+    return "v1.0.0"
+
+
+SUITE_VERSION = load_suite_version()
 CURRENT_USER = os.environ.get("SUDO_USER") or getpass.getuser()
 try:
     import pwd
@@ -2276,7 +2292,7 @@ class MainWindow(QMainWindow):
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Debian Dev Suite — Master GUI Manager")
+        self.setWindowTitle(f"Debian Dev Suite Manager ({SUITE_VERSION})")
         self.resize(1180, 820)
         self.setMinimumSize(920, 640)
 
@@ -2351,7 +2367,7 @@ class MainWindow(QMainWindow):
 
         title_col = QVBoxLayout()
         title_col.setSpacing(0)
-        app_title = QLabel("Debian Dev Suite Manager")
+        app_title = QLabel(f"Debian Dev Suite Manager ({SUITE_VERSION})")
         app_title.setStyleSheet(f"font-size: 16px; font-weight: 800; color: {COLOR_TEXT}; letter-spacing: -0.3px; background: transparent;")
         
         app_subtitle = QLabel("Master Control Center • Zero-Telemetry • 100% Offline-First Orchestrator")
@@ -3194,6 +3210,7 @@ class MainWindow(QMainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setApplicationName("Debian Dev Suite Manager")
+    app.setApplicationVersion(SUITE_VERSION.lstrip("v"))
     app.setStyle(CleanNoFocusProxyStyle("Fusion"))
     window = MainWindow()
     window.show()
