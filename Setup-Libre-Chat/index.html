@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="theme-color" content="#171717" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="LibreChat - An open source chat application with support for multiple AI models" />
+    <title>LibreChat</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png" />
+    <link rel="apple-touch-icon" href="assets/apple-touch-icon-180x180.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content" />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      .markdown img { width: 88px !important; height: 88px !important; max-width: 88px !important; max-height: 88px !important; border-radius: 10px !important; object-fit: cover !important; display: inline-block !important; cursor: pointer !important; border: 1px solid rgba(128, 128, 128, 0.25) !important; background-color: rgba(0, 0, 0, 0.04) !important; vertical-align: middle !important; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important; transition: transform 0.15s ease, box-shadow 0.15s ease !important; } .markdown img:hover { transform: scale(1.06) !important; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25) !important; } .markdown a:has(img) { text-decoration: none !important; display: inline-block !important; }
+      /* Lightbox Modal Styles */
+      #lc-lightbox-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 10, 12, 0.88);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        z-index: 999999;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        user-select: none;
+      }
+      #lc-lightbox-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+      #lc-lightbox-bar {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+        background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
+        color: #fff;
+        z-index: 10;
+      }
+      #lc-lightbox-title {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        color: #e2e8f0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 45vw;
+      }
+      #lc-lightbox-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .lc-lightbox-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #f1f5f9;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 13px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+      }
+      .lc-lightbox-btn:hover {
+        background: rgba(255, 255, 255, 0.22);
+        color: #fff;
+        transform: translateY(-1px);
+      }
+      .lc-lightbox-btn-close {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: rgba(239, 68, 68, 0.4);
+        color: #fca5a5;
+      }
+      .lc-lightbox-btn-close:hover {
+        background: rgba(239, 68, 68, 0.4);
+        color: #fff;
+      }
+      #lc-lightbox-stage {
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+        cursor: grab;
+      }
+      #lc-lightbox-stage.dragging {
+        cursor: grabbing;
+      }
+      #lc-lightbox-img {
+        max-width: 90vw;
+        max-height: 85vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+        transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1);
+        pointer-events: auto;
+      }
+    </style>
+    <script>
+      // Lightbox Interactive Modal & Viewer Tab Logic
+      (function () {
+        let zoomLevel = 1;
+        let panX = 0;
+        let panY = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let currentSrc = '';
+        let currentAlt = '';
+
+        function createLightbox() {
+          if (document.getElementById('lc-lightbox-overlay')) return;
+          const overlay = document.createElement('div');
+          overlay.id = 'lc-lightbox-overlay';
+          overlay.innerHTML = `
+            <div id="lc-lightbox-bar">
+              <span id="lc-lightbox-title">Attached Image</span>
+              <div id="lc-lightbox-controls">
+                <button class="lc-lightbox-btn" id="lc-btn-zoom-out" title="Zoom Out (-)">−</button>
+                <button class="lc-lightbox-btn" id="lc-btn-zoom-reset" title="Reset Zoom (0)">100%</button>
+                <button class="lc-lightbox-btn" id="lc-btn-zoom-in" title="Zoom In (+)">+</button>
+                <button class="lc-lightbox-btn" id="lc-btn-new-tab" title="Open in New Tab">↗ New Tab</button>
+                <button class="lc-lightbox-btn" id="lc-btn-download" title="Download Image">⬇ Save</button>
+                <button class="lc-lightbox-btn lc-lightbox-btn-close" id="lc-btn-close" title="Close (Esc)">✕</button>
+              </div>
+            </div>
+            <div id="lc-lightbox-stage">
+              <img id="lc-lightbox-img" src="" alt="Preview" draggable="false" />
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          const img = document.getElementById('lc-lightbox-img');
+          const stage = document.getElementById('lc-lightbox-stage');
+
+          function updateTransform() {
+            img.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+            const resetBtn = document.getElementById('lc-btn-zoom-reset');
+            if (resetBtn) resetBtn.textContent = `${Math.round(zoomLevel * 100)}%`;
+          }
+
+          function resetZoom() {
+            zoomLevel = 1;
+            panX = 0;
+            panY = 0;
+            updateTransform();
+          }
+
+          document.getElementById('lc-btn-zoom-in').onclick = (e) => {
+            e.stopPropagation();
+            zoomLevel = Math.min(zoomLevel + 0.25, 4);
+            updateTransform();
+          };
+          document.getElementById('lc-btn-zoom-out').onclick = (e) => {
+            e.stopPropagation();
+            zoomLevel = Math.max(zoomLevel - 0.25, 0.5);
+            updateTransform();
+          };
+          document.getElementById('lc-btn-zoom-reset').onclick = (e) => {
+            e.stopPropagation();
+            resetZoom();
+          };
+          document.getElementById('lc-btn-close').onclick = (e) => {
+            e.stopPropagation();
+            closeLightbox();
+          };
+
+          document.getElementById('lc-btn-new-tab').onclick = (e) => {
+            e.stopPropagation();
+            openImageInViewerTab(currentSrc, currentAlt);
+          };
+
+          document.getElementById('lc-btn-download').onclick = (e) => {
+            e.stopPropagation();
+            downloadImageDirect(currentSrc, currentAlt);
+          };
+
+          // Mousewheel zoom
+          stage.addEventListener(
+            'wheel',
+            (e) => {
+              e.preventDefault();
+              if (e.deltaY < 0) {
+                zoomLevel = Math.min(zoomLevel + 0.15, 4);
+              } else {
+                zoomLevel = Math.max(zoomLevel - 0.15, 0.5);
+              }
+              updateTransform();
+            },
+            { passive: false }
+          );
+
+          // Drag to pan
+          stage.addEventListener('mousedown', (e) => {
+            if (e.target === stage || e.target === img) {
+              isDragging = true;
+              startX = e.clientX - panX;
+              startY = e.clientY - panY;
+              stage.classList.add('dragging');
+            }
+          });
+          window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            panX = e.clientX - startX;
+            panY = e.clientY - startY;
+            updateTransform();
+          });
+          window.addEventListener('mouseup', () => {
+            if (isDragging) {
+              isDragging = false;
+              stage.classList.remove('dragging');
+            }
+          });
+
+          // Click on stage background to close (if not dragging)
+          stage.addEventListener('click', (e) => {
+            if (e.target === stage) {
+              closeLightbox();
+            }
+          });
+
+          // Double click image to toggle 1x / 2x zoom
+          img.addEventListener('dblclick', (e) => {
+            e.stopPropagation();
+            zoomLevel = zoomLevel > 1.2 ? 1 : 2;
+            panX = 0;
+            panY = 0;
+            updateTransform();
+          });
+        }
+
+        function openLightbox(src, alt) {
+          createLightbox();
+          const overlay = document.getElementById('lc-lightbox-overlay');
+          const img = document.getElementById('lc-lightbox-img');
+          const title = document.getElementById('lc-lightbox-title');
+
+          currentSrc = src;
+          currentAlt = alt || 'Attached Image';
+          title.textContent = currentAlt.replace(/^Attached Image:\s*/i, '');
+          img.src = src;
+
+          zoomLevel = 1;
+          panX = 0;
+          panY = 0;
+          img.style.transform = 'translate(0px, 0px) scale(1)';
+          const resetBtn = document.getElementById('lc-btn-zoom-reset');
+          if (resetBtn) resetBtn.textContent = '100%';
+
+          overlay.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+          const overlay = document.getElementById('lc-lightbox-overlay');
+          if (overlay) {
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+          }
+        }
+
+        function openImageInViewerTab(src, title) {
+          const cleanTitle = (title || 'Image Preview').replace(/^Attached Image:\s*/i, '');
+          const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>${cleanTitle}</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #0d0d10; color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+    header {
+      height: 48px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px; border-bottom: 1px solid rgba(255,255,255,0.08);
+      font-size: 14px; font-weight: 500;
+    }
+    .content {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 24px; overflow: auto;
+    }
+    img {
+      max-width: 95vw; max-height: calc(100vh - 96px);
+      object-fit: contain; border-radius: 8px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.8);
+      cursor: zoom-in; transition: transform 0.15s ease;
+    }
+    img.zoomed {
+      max-width: none; max-height: none; transform: scale(1.6);
+      cursor: zoom-out; margin: auto;
+    }
+    .btn {
+      background: rgba(255,255,255,0.12); color: #fff; border: none;
+      padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover { background: rgba(255,255,255,0.25); }
+  </style>
+</head>
+<body>
+  <header>
+    <span>${cleanTitle}</span>
+    <a href="${src}" download="${cleanTitle}" class="btn">⬇ Download Image</a>
+  </header>
+  <div class="content">
+    <img src="${src}" alt="${cleanTitle}" onclick="this.classList.toggle('zoomed')" title="Click to zoom in / out" />
+  </div>
+</body>
+</html>`;
+          const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          const blobUrl = URL.createObjectURL(blob);
+          window.open(blobUrl, '_blank');
+        }
+
+        function downloadImageDirect(src, filename) {
+          const a = document.createElement('a');
+          a.href = src;
+          a.download = (filename || 'image.png').replace(/^Attached Image:\s*/i, '');
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+
+        // Global Event Delegation for chat image clicks
+        document.addEventListener(
+          'click',
+          function (e) {
+            // Find if clicked on an image inside markdown
+            const img = e.target.closest('.markdown img');
+            if (img) {
+              e.preventDefault();
+              e.stopPropagation();
+
+              // If Ctrl key or Meta key is pressed, open in viewer tab directly!
+              if (e.ctrlKey || e.metaKey) {
+                openImageInViewerTab(img.src, img.alt);
+              } else {
+                openLightbox(img.src, img.alt);
+              }
+              return false;
+            }
+
+            // Also intercept parent anchor click if it wraps markdown img
+            const anchor = e.target.closest('.markdown a');
+            if (anchor && anchor.querySelector('img')) {
+              e.preventDefault();
+              e.stopPropagation();
+              const childImg = anchor.querySelector('img');
+              if (e.ctrlKey || e.metaKey) {
+                openImageInViewerTab(childImg.src, childImg.alt);
+              } else {
+                openLightbox(childImg.src, childImg.alt);
+              }
+              return false;
+            }
+          },
+          true
+        );
+
+        // Escape key to close lightbox
+        window.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') {
+            closeLightbox();
+          } else if (e.key === '+' || e.key === '=') {
+            const overlay = document.getElementById('lc-lightbox-overlay');
+            if (overlay && overlay.classList.contains('active')) {
+              document.getElementById('lc-btn-zoom-in')?.click();
+            }
+          } else if (e.key === '-') {
+            const overlay = document.getElementById('lc-lightbox-overlay');
+            if (overlay && overlay.classList.contains('active')) {
+              document.getElementById('lc-btn-zoom-out')?.click();
+            }
+          } else if (e.key === '0') {
+            const overlay = document.getElementById('lc-lightbox-overlay');
+            if (overlay && overlay.classList.contains('active')) {
+              document.getElementById('lc-btn-zoom-reset')?.click();
+            }
+          }
+        });
+
+        window.__lcOpenLightbox = openLightbox;
+        window.__lcOpenViewerTab = openImageInViewerTab;
+      })();
+    </script>
+    </style>
+    <script>
+      const theme = localStorage.getItem('color-theme');
+      const loadingContainerStyle = document.createElement('style');
+      let backgroundColor;
+
+      if (theme === 'dark') {
+        backgroundColor = '#0d0d0d';
+      } else if (theme === 'light') {
+        backgroundColor = '#ffffff';
+      } else if (theme === 'system') {
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        backgroundColor = prefersDarkScheme ? '#0d0d0d' : '#ffffff';
+      } else {
+        backgroundColor = '#ffffff';
+      }
+
+      loadingContainerStyle.innerHTML = `
+        #loading-container {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100vh;
+          background-color: ${backgroundColor};
+        }
+      `;
+      document.head.appendChild(loadingContainerStyle);
+    </script>
+    <script>
+      (function () {
+        var KEY = 'lc-asset-recovery-at';
+        function shouldRecover() {
+          try {
+            var last = Number(sessionStorage.getItem(KEY)) || 0;
+            if (Date.now() - last < 60000) {
+              return false;
+            }
+            sessionStorage.setItem(KEY, String(Date.now()));
+            return true;
+          } catch (e) {
+            return false;
+          }
+        }
+        /** Recovers from stale builds (e.g. an outdated service worker serving old
+         * hashed chunks after a deploy) by unregistering workers and reloading once.
+         * Returns true when a recovery reload was initiated. */
+        window.__lcRecoverStaleAssets = function () {
+          if (!shouldRecover()) {
+            return false;
+          }
+          var reload = function () {
+            window.location.reload();
+          };
+          if (navigator.serviceWorker) {
+            var scopeBase = new URL('./', document.baseURI || window.location.href).href;
+            navigator.serviceWorker
+              .getRegistrations()
+              .then(function (registrations) {
+                return Promise.all(
+                  registrations
+                    .filter(function (registration) {
+                      return registration.scope.indexOf(scopeBase) === 0;
+                    })
+                    .map(function (registration) {
+                      return registration.unregister();
+                    }),
+                );
+              })
+              .then(reload, reload);
+          } else {
+            reload();
+          }
+          return true;
+        };
+        if (navigator.serviceWorker) {
+          navigator.serviceWorker.addEventListener('message', function (event) {
+            if (!event.data || event.data.type !== 'LC_SW_PING') {
+              return;
+            }
+            var source = event.source || navigator.serviceWorker.controller;
+            if (source) {
+              source.postMessage({ type: 'LC_SW_PONG' });
+            }
+          });
+        }
+        window.addEventListener(
+          'error',
+          function (event) {
+            var el = event.target;
+            if (!el || !el.tagName) {
+              return;
+            }
+            var failedScript = el.tagName === 'SCRIPT' && el.src;
+            var failedPreload =
+              el.tagName === 'LINK' && /preload/.test(el.rel || '') && /\.js$/.test(el.href || '');
+            if (failedScript || failedPreload) {
+              window.__lcRecoverStaleAssets();
+            }
+          },
+          true,
+        );
+        window.addEventListener('unhandledrejection', function (event) {
+          var message = event.reason && event.reason.message;
+          if (
+            typeof message === 'string' &&
+            (message.indexOf('dynamically imported module') !== -1 ||
+              message.indexOf('Importing a module script failed') !== -1)
+          ) {
+            window.__lcRecoverStaleAssets();
+          }
+        });
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index.BHS-ABOD.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/rolldown-runtime.Cyuzqnbw.js">
+    <link rel="modulepreload" crossorigin href="./assets/codemirror-core.DCeggAsc.js">
+    <link rel="modulepreload" crossorigin href="./assets/http-client.D1qXypdn.js">
+    <link rel="modulepreload" crossorigin href="./assets/mermaid.CpNRA-E5.js">
+    <link rel="modulepreload" crossorigin href="./assets/advanced-inputs.BKUrQSBb.js">
+    <link rel="modulepreload" crossorigin href="./assets/animations.Cg77P7xO.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-vtree.Bv__m2K7.js">
+    <link rel="modulepreload" crossorigin href="./assets/query-devtools.eCLhNcV1.js">
+    <link rel="modulepreload" crossorigin href="./assets/validation.DV1yC6np.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor.BRKtqY5s.js">
+    <link rel="modulepreload" crossorigin href="./assets/avatars.CH7OGiPh.js">
+    <link rel="modulepreload" crossorigin href="./assets/headlessui.CLu2eCui.js">
+    <link rel="modulepreload" crossorigin href="./assets/radix-ui.CFzgeTqm.js">
+    <link rel="modulepreload" crossorigin href="./assets/react-interactions.Ggqtj1A5.js">
+    <link rel="modulepreload" crossorigin href="./assets/routing.Cb7G0LKm.js">
+    <link rel="modulepreload" crossorigin href="./assets/tanstack-vendor.BolsaK2r.js">
+    <link rel="modulepreload" crossorigin href="./assets/markdown-processing.BqkdC0TQ.js">
+    <link rel="modulepreload" crossorigin href="./assets/date-utils.7tLVf9uC.js">
+    <link rel="modulepreload" crossorigin href="./assets/framer-motion.CMPOPEls.js">
+    <link rel="modulepreload" crossorigin href="./assets/i18n.D3Gbp8tn.js">
+    <link rel="modulepreload" crossorigin href="./assets/utilities.B8O80BWK.js">
+    <link rel="modulepreload" crossorigin href="./assets/forms.BEEooEiq.js">
+    <link rel="modulepreload" crossorigin href="./assets/virtualization.Cr3i2Ntx.js">
+    <link rel="modulepreload" crossorigin href="./assets/hooks.Bi3Cm4Qy.js">
+    <link rel="modulepreload" crossorigin href="./assets/sandpack.CEJsOUxH.js">
+    <link rel="modulepreload" crossorigin href="./assets/MyFilesModal.CTOcQJOo.js">
+    <link rel="modulepreload" crossorigin href="./assets/security-ui.BjsCPful.js">
+    <link rel="modulepreload" crossorigin href="./assets/ProjectCreateDialog.k65xsytu.js">
+    <link rel="modulepreload" crossorigin href="./assets/forms.CA710KHo.js">
+    <link rel="modulepreload" crossorigin href="./assets/polyfills.BnDHDYRr.js">
+    <link rel="modulepreload" crossorigin href="./assets/code-editor.CMtCNxFi.js">
+    <link rel="modulepreload" crossorigin href="./assets/math-katex.BMlcaHSk.js">
+    <link rel="stylesheet" crossorigin href="./assets/math-katex.uZ8_QngQ.css">
+    <link rel="stylesheet" crossorigin href="./assets/index.CdHFgm6U.css">
+  <link rel="manifest" href="./manifest.webmanifest" crossorigin="use-credentials"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
+  <body>
+    <div id="root">
+      <div id="loading-container"></div>
+    </div>
+  </body>
+</html>

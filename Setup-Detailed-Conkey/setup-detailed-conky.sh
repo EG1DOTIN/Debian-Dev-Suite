@@ -1,0 +1,1 @@
+Setup-Detailed-Conky.sh

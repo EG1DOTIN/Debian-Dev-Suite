@@ -1,0 +1,33 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Brightness & Color Controller
+GenericName=Screen Brightness & Blue Light Filter
+Comment=Ultra-lightweight, privacy-focused display brightness and night light controller
+Exec=brightness-controller --gui
+Icon=brightness-controller
+Terminal=false
+Categories=Utility;Settings;HardwareSettings;
+Keywords=brightness;backlight;display;screen;nightlight;gamma;xrandr;dimmer;blue light;
+StartupNotify=true
+Actions=Daylight;Office;Evening;Night;UltraDim;
+
+[Desktop Action Daylight]
+Name=☀️ Daylight Mode (100%)
+Exec=brightness-control --preset day
+
+[Desktop Action Office]
+Name=💻 Office Mode (80%)
+Exec=brightness-control --preset office
+
+[Desktop Action Evening]
+Name=🌆 Evening Mode (55% + Warm)
+Exec=brightness-control --preset evening
+
+[Desktop Action Night]
+Name=🌙 Night Mode (35% + High Warmth)
+Exec=brightness-control --preset night
+
+[Desktop Action UltraDim]
+Name=🕶️ Ultra-Dim Mode (15% + Dark Room)
+Exec=brightness-control --preset ultradim

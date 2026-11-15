@@ -1,0 +1,67 @@
+# ==============================================================================
+# LibreChat Local Docker Compose Configuration
+# 100% Localhost Isolated, Privacy-Focused & Zero Telemetry
+# ==============================================================================
+# Access: http://127.0.0.1:3080
+# Strict Binding: 127.0.0.1 only (Zero external LAN/WAN exposure)
+# ==============================================================================
+
+services:
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: librechat_app
+    restart: "no"
+    network_mode: "host"
+    environment:
+      - HOST=127.0.0.1
+      - PORT=3080
+      - MONGO_URI=mongodb://127.0.0.1:27017/LibreChat
+      - CONFIG_PATH=/app/librechat.yaml
+      - TELEMETRY=false
+      - DISABLE_TELEMETRY=true
+      - CHECK_BALANCE=false
+      - ALLOW_REGISTRATION=true
+      - ALLOW_SOCIAL_LOGIN=false
+      - SEARCH=true
+      - MEILI_HOST=http://127.0.0.1:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+    env_file:
+      - .env
+    volumes:
+      - type: bind
+        source: ./librechat.yaml
+        target: /app/librechat.yaml
+      - type: bind
+        source: ./index.html
+        target: /app/client/dist/index.html
+      - type: bind
+        source: ./librechat-data/images
+        target: /app/client/public/images
+      - type: bind
+        source: ./librechat-data/logs
+        target: /app/api/logs
+    depends_on:
+      - mongodb
+      - meilisearch
+
+  mongodb:
+    image: mongo:6.0
+    container_name: librechat_mongodb
+    restart: "no"
+    network_mode: "host"
+    volumes:
+      - ./mongo_data:/data/db
+    command: mongod --noauth --bind_ip 127.0.0.1
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12.0
+    container_name: librechat_meilisearch
+    restart: "no"
+    network_mode: "host"
+    environment:
+      - MEILI_HOST=http://127.0.0.1:7700
+      - MEILI_HTTP_ADDR=127.0.0.1:7700
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY}
+      - MEILI_NO_ANALYTICS=true
+    volumes:
+      - ./meili_data:/meili_data

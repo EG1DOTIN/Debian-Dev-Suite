@@ -1,0 +1,13 @@
+{
+  "include": [
+    "Setup-Libre-Chat/tools",
+    "Setup-GUI-Manager"
+  ],
+  "extraPaths": [
+    "Setup-Libre-Chat/tools",
+    "/usr/lib/python3/dist-packages"
+  ],
+  "venvPath": ".",
+  "venv": ".venv"
+}
+

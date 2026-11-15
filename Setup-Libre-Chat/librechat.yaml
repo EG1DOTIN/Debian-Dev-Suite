@@ -1,0 +1,42 @@
+# ==============================================================================
+# LibreChat Custom Configuration File
+# 100% Offline, Local-First AI Integration
+# Pre-configured to connect to Debian Dev Suite local llama.cpp server
+# ==============================================================================
+
+version: 1.1.5
+
+cache: true
+
+# Custom Endpoints: Connect directly to local AI inference servers
+endpoints:
+  custom:
+    # 1. Local llama.cpp Server (100% Offline)
+    - name: "llama.cpp"
+      apiKey: "not-needed-offline"
+      baseURL: "http://127.0.0.1:8080/v1"
+      models:
+        default:
+          - "local-model"
+        fetch: true
+      titleConvo: true
+      titleModel: "local-model"
+      summarize: false
+      summaryModel: "local-model"
+      forcePrompt: false
+      modelDisplayLabel: "Local llama.cpp (100% Offline)"
+
+    # 2. Local Ollama Server (if installed)
+    - name: "Ollama"
+      apiKey: "ollama"
+      baseURL: "http://127.0.0.1:11434/v1"
+      models:
+        default:
+          - "llama3.2"
+        fetch: true
+      titleConvo: true
+      titleModel: "llama3.2"
+      summarize: false
+      summaryModel: "llama3.2"
+      forcePrompt: false
+      modelDisplayLabel: "Local Ollama"

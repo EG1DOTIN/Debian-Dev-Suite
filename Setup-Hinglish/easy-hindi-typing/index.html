@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="hi" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Easy Hindi Typing — Offline Hinglish to Devanagari</title>
+  <meta name="description" content="Fast, 100% offline, privacy-first Hinglish to Hindi typing app with real-time multi-word suggestions.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Top Header -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <div class="brand-icon">
+          <span class="om-symbol">ॐ</span>
+        </div>
+        <div class="brand-text">
+          <h1>Easy Hindi Typing</h1>
+          <span class="badge offline-badge">100% Offline &amp; Private</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <button id="toggleKeyboardBtn" class="btn btn-secondary" title="वर्चुअल कीबोर्ड चालू/बंद करें" aria-label="Toggle Virtual Keyboard">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <path d="M6 8h.001M10 8h.001M14 8h.001M18 8h.001M6 12h.001M10 12h.001M14 12h.001M18 12h.001M8 16h8"></path>
+          </svg>
+          <span class="btn-text">कीबोर्ड</span>
+        </button>
+
+        <button id="helpBtn" class="btn btn-secondary" title="कीबोर्ड शॉर्टकट्स एवं सहायता" aria-label="Keyboard Shortcuts">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"></path>
+          </svg>
+          <span class="btn-text">मदद</span>
+        </button>
+
+        <button id="themeToggleBtn" class="btn btn-icon" title="डार्क / लाइट मोड बदलें" aria-label="Toggle Theme">
+          <svg id="moonIcon" class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          <svg id="sunIcon" class="icon hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-content">
+      <!-- Editor Card -->
+      <div class="editor-container">
+        <!-- Quick Symbols Toolbar (Like easyhindityping.com) -->
+        <div class="symbols-bar" id="symbolsBar">
+          <span class="symbols-label">त्वरित चिह्न:</span>
+          <div class="symbol-chips">
+            <button class="symbol-btn" data-sym="।">। (पूर्ण विराम)</button>
+            <button class="symbol-btn" data-sym="॥">॥ (दीर्घ विराम)</button>
+            <button class="symbol-btn" data-sym="ॐ">ॐ</button>
+            <button class="symbol-btn" data-sym="₹">₹ (रुपया)</button>
+            <button class="symbol-btn" data-sym="ऽ">ऽ (अवग्रह)</button>
+            <button class="symbol-btn" data-sym="ॅ">ॅ</button>
+            <button class="symbol-btn" data-sym="ॉ">ॉ</button>
+            <button class="symbol-btn" data-sym="१">१</button>
+            <button class="symbol-btn" data-sym="२">२</button>
+            <button class="symbol-btn" data-sym="३">३</button>
+            <button class="symbol-btn" data-sym="४">४</button>
+            <button class="symbol-btn" data-sym="५">५</button>
+            <button class="symbol-btn" data-sym="६">६</button>
+            <button class="symbol-btn" data-sym="७">७</button>
+            <button class="symbol-btn" data-sym="८">८</button>
+            <button class="symbol-btn" data-sym="९">९</button>
+            <button class="symbol-btn" data-sym="०">०</button>
+          </div>
+        </div>
+
+        <!-- Editor Controls Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-left">
+            <button id="copyBtn" class="btn btn-primary" title="कॉपी करें (Ctrl+C)">
+              <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>Copy</span>
+            </button>
+
+            <button id="downloadBtn" class="btn btn-secondary" title="टेक्स्ट फ़ाइल के रूप में डाउनलोड करें">
+              <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download .txt</span>
+            </button>
+
+            <button id="clearBtn" class="btn btn-danger-ghost" title="पूरा टेक्स्ट साफ़ करें">
+              <svg class="icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>Clear</span>
+            </button>
+          </div>
+
+          <div class="toolbar-right">
+            <!-- Font Size Controls -->
+            <div class="font-size-control">
+              <button id="decreaseFontBtn" class="btn btn-icon-sm" title="फ़ॉन्ट छोटा करें">A-</button>
+              <span id="currentFontSize" class="font-size-indicator">20px</span>
+              <button id="increaseFontBtn" class="btn btn-icon-sm" title="फ़ॉन्ट बड़ा करें">A+</button>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-display">
+              <span id="wordCount">0 शब्द</span>
+              <span class="stat-divider">•</span>
+              <span id="charCount">0 अक्षर</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Textarea Wrapper -->
+        <div class="textarea-wrapper" id="textareaWrapper">
+          <textarea
+            id="editorArea"
+            rows="12"
+            spellcheck="false"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            placeholder="यहाँ हिंग्लिश में टाइप करें (जैसे 'namaste', 'aap kaise hain', 'bharat') और Space या Enter दबाएँ... शब्द सुझाव सीधे यहाँ दिखाई देंगे।"
+          ></textarea>
+
+          <!-- Hidden Mirror Div for exact Caret Coordinate tracking -->
+          <div id="caretMirror" class="caret-mirror" aria-hidden="true"></div>
+
+          <!-- Floating Suggestion Popup Box -->
+          <div id="suggestionsBox" class="suggestions-box hidden" role="listbox" aria-label="Hindi word suggestions">
+            <div class="suggestions-header">
+              <span>सुझाव (1-9 दबाएँ या चुनें):</span>
+              <span class="esc-hint">Esc = रद्द</span>
+            </div>
+            <ul id="suggestionsList" class="suggestions-list">
+              <!-- Dynamically populated candidate items -->
+            </ul>
+          </div>
+        </div>
+
+        <!-- Notification Toast -->
+        <div id="toastNotification" class="toast hidden" role="status" aria-live="polite">
+          <svg class="icon check-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span id="toastMessage">कॉपी कर लिया गया!</span>
+        </div>
+      </div>
+
+      <!-- Virtual Keyboard Drawer (Toggleable) -->
+      <section id="virtualKeyboardSection" class="virtual-keyboard-section hidden" aria-label="Virtual Hindi Keyboard">
+        <div class="vk-header">
+          <h3>वर्चुअल हिंदी कीबोर्ड (Virtual Hindi Keyboard)</h3>
+          <button id="closeVkBtn" class="btn btn-icon-sm" title="बंद करें">✕</button>
+        </div>
+        <div class="vk-keyboard" id="vkKeyboard">
+          <!-- Populated by app.js -->
+        </div>
+      </section>
+
+      <!-- Quick Guidance & Features Info -->
+      <section class="instructions-section">
+        <div class="info-card">
+          <h4>💡 कैसे इस्तेमाल करें (How to Use)</h4>
+          <ol class="guide-steps">
+            <li><strong>टाइप करें:</strong> बॉक्स में अंग्रेजी (Hinglish) में टाइप करें, जैसे <code>namaste</code>, <code>kya hal hai</code>, <code>bharat</code>.</li>
+            <li><strong>सुझाव चुनें:</strong> शब्द टाइप करते ही सुझाव बॉक्स खुलेगा। <code>1</code> से <code>9</code> नंबर दबाएँ या <code>Arrow Keys</code> से चुनकर <code>Space</code> या <code>Enter</code> दबाएँ।</li>
+            <li><strong>अंग्रेजी में रखना हो:</strong> सूची का आख़िरी विकल्प (अंग्रेजी) चुनें या <code>Esc</code> दबाएँ।</li>
+            <li><strong>कॉपी या सेव करें:</strong> ऊपर दिए गए <strong>Copy</strong> या <strong>Download .txt</strong> बटन पर क्लिक करें।</li>
+          </ol>
+        </div>
+
+        <div class="info-card">
+          <h4>🔒 100% सुरक्षित एवं स्थानीय (Localhost &amp; Privacy)</h4>
+          <p>यह एप्लिकेशन आपके अपने कंप्यूटर (Localhost) पर 100% ऑफ़लाइन चलती है। कोई भी डेटा या शब्द किसी सर्वर पर नहीं भेजा जाता। बिना इंटरनेट के भी पूरी गति से काम करता है।</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Help Modal -->
+    <div id="helpModal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>कीबोर्ड शॉर्टकट्स एवं संकेत (Key Shortcuts)</h3>
+          <button id="closeHelpModalBtn" class="btn btn-icon-sm" aria-label="Close modal">✕</button>
+        </div>
+        <div class="modal-body">
+          <table class="shortcuts-table">
+            <thead>
+              <tr>
+                <th>कुंजी (Key)</th>
+                <th>क्रिया (Action)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><kbd>Space</kbd> / <kbd>Enter</kbd></td>
+                <td>शीर्ष सुझाव (पहला शब्द) चुनें और आगे बढ़ें</td>
+              </tr>
+              <tr>
+                <td><kbd>1</kbd> – <kbd>9</kbd></td>
+                <td>संबंधित क्रम संख्या का सुझाव तुरंत चुनें</td>
+              </tr>
+              <tr>
+                <td><kbd>↓</kbd> / <kbd>↑</kbd></td>
+                <td>सुझावों की सूची में ऊपर या नीचे जाएँ</td>
+              </tr>
+              <tr>
+                <td><kbd>Esc</kbd></td>
+                <td>सुझाव बॉक्स बंद करें और मूल अंग्रेजी शब्द बनाए रखें</td>
+              </tr>
+              <tr>
+                <td><kbd>Backspace</kbd></td>
+                <td>अक्षर मिटाएँ या पहले लिखे शब्द को दोबारा संपादित करें</td>
+              </tr>
+              <tr>
+                <td><kbd>Ctrl + C</kbd></td>
+                <td>चयनित टेक्स्ट कॉपी करें</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Easy Hindi Typing Localhost • Part of Debian Dev Suite • 100% Free &amp; Open Source</p>
+    </footer>
+  </div>
+
+  <script src="words.js"></script>
+  <script src="transliterate.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

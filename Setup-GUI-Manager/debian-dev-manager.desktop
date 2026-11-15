@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Debian Dev Suite Manager
+GenericName=System & Development Setup Control Center
+Comment=Visual Control Center for Debian Dev Suite: inspect, install, configure, and monitor dev modules with real-time terminal output
+Exec=debian-dev-manager
+Icon=debian-dev-suite
+Terminal=false
+Categories=Development;System;Settings;PackageManager;
+Keywords=debian;setup;developer;docker;tmux;geany;markdown;forgejo;git;llama;ai;battery;vbox;brightness;
+StartupNotify=true
+StartupWMClass=debian-dev-manager

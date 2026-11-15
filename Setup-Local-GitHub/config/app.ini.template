@@ -1,0 +1,155 @@
+# ==============================================================================
+# Hardened Forgejo app.ini Reference Configuration (Localhost Only)
+# ==============================================================================
+#
+# This file serves as an annotated reference for a zero-trust, private,
+# air-gapped Forgejo deployment on 127.0.0.1.
+# Every configuration setting below has been hardened to eliminate information
+# leakage, external requests, and unauthorized access.
+# ==============================================================================
+
+APP_NAME = Localhost Git Forge (Strictly Private)
+RUN_MODE = prod
+RUN_USER = git
+
+[server]
+# --- NETWORK BINDING ---
+# Bind strictly to IPv4 loopback (127.0.0.1).
+# NEVER set HTTP_ADDR to 0.0.0.0 unless behind a strictly secured reverse proxy.
+PROTOCOL               = http
+HTTP_ADDR              = 127.0.0.1
+HTTP_PORT              = 3000
+DOMAIN                 = 127.0.0.1
+ROOT_URL               = http://127.0.0.1:3000/
+APP_DATA_PATH          = %(GITEA_WORK_DIR)s/data
+
+# --- PRIVACY & OFFLINE ASSETS ---
+# Disables external CDN assets; forces Forgejo to serve fonts, scripts, and CSS locally.
+OFFLINE_MODE           = true
+
+# --- BUILT-IN SSH SERVER (LOOPBACK) ---
+DISABLE_SSH            = false
+START_SSH_SERVER       = true
+SSH_PORT               = 2222
+SSH_LISTEN_HOST        = 127.0.0.1
+SSH_DOMAIN             = 127.0.0.1
+SSH_KEY_GEN_ALGORITHMS = ed25519,ecdsa,rsa
+SSH_SERVER_CIPHERS     = chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com
+SSH_SERVER_KEY_EXCHANGES = curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group-exchange-sha256
+SSH_SERVER_MACS        = hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com
+
+# --- PERFORMANCE & CACHING ---
+LANDING_PAGE           = explore
+ENABLE_GZIP            = true
+STATIC_CACHE_TIME      = 6h
+
+[service]
+# --- ACCESS CONTROL & VISIBILITY ---
+# Disables public sign-up. Only local administrators can create user accounts.
+DISABLE_REGISTRATION             = true
+
+# Requires sign-in to view anything (repositories, code, issues, profiles, explore).
+REQUIRE_SIGNIN_VIEW              = true
+
+# Disables external outbound mail notifications.
+ENABLE_NOTIFY_MAIL               = false
+
+# Disables captcha (eliminates requests to Google / third-party captcha endpoints).
+ENABLE_CAPTCHA                   = false
+
+# Automatically marks new user emails as private to prevent accidental disclosure.
+DEFAULT_KEEP_EMAIL_PRIVATE       = true
+SHOW_USER_EMAIL                  = false
+
+# Allow creating local organizations for group projects
+DEFAULT_ALLOW_CREATE_ORGANIZATION = true
+DEFAULT_ENABLE_TIMETRACKING      = false
+ALLOW_ONLY_EXTERNAL_REGISTRATION = false
+NO_REPLY_ADDRESS                 = noreply.localhost
+
+[openid]
+# Hard-disables OpenID logins and registrations.
+ENABLE_OPENID_SIGNIN             = false
+ENABLE_OPENID_SIGNUP             = false
+
+[oauth2]
+# Local password authentication only; disable OAuth2 identity provider.
+ENABLE                           = false
+
+[federation]
+# Disable ActivityPub / Fediverse synchronization and external lookups.
+ENABLED                          = false
+
+[picture]
+# --- ZERO AVATAR TRACKING ---
+# Prevents email hash transmission to Gravatar servers.
+DISABLE_GRAVATAR                 = true
+# Prevents queries to Libravatar or federated avatar nodes.
+ENABLE_FEDERATED_AVATAR          = false
+
+[repository]
+# Default new repositories to private.
+DEFAULT_PRIVATE                  = true
+FORCE_PRIVATE                    = false
+# Enable "Push to Create": Git push to non-existent repo auto-creates it!
+ENABLE_PUSH_CREATE_USER          = true
+ENABLE_PUSH_CREATE_ORG           = true
+MAX_CREATION_LIMIT               = -1
+DEFAULT_BRANCH                   = main
+
+[security]
+# Locks the installer permanently so no web user can trigger initial setup wizard.
+INSTALL_LOCK                     = true
+
+# Cryptographically random secrets (generated via openssl rand -hex 32)
+SECRET_KEY                       = GENERATE_RANDOM_SECRET_KEY
+INTERNAL_TOKEN                   = GENERATE_RANDOM_INTERNAL_TOKEN
+
+# Reject spoofed X-Forwarded-For headers from untrusted sources.
+REVERSE_PROXY_LIMIT              = 0
+REVERSE_PROXY_TRUSTED_PROXIES    = 127.0.0.1
+
+# Strong password requirements for local accounts.
+PASSWORD_COMPLEXITY              = lower,upper,digit,spec
+MIN_PASSWORD_LENGTH              = 12
+LOGIN_REMEMBER_DAYS              = 7
+
+# Cookie hardening
+COOKIE_USERNAME                  = forgejo_local_usr
+COOKIE_REMEMBER_NAME             = forgejo_local_rm
+COOKIE_SECURE                    = false
+COOKIE_SAME_SITE                 = strict
+
+[database]
+# --- EMBEDDED ZERO-NETWORK DATABASE ---
+# SQLite3 database engine: no network sockets, zero external credentials.
+DB_TYPE                          = sqlite3
+PATH                             = %(GITEA_WORK_DIR)s/data/forgejo.db
+# WAL (Write-Ahead Logging) enables high-performance concurrent reads & writes.
+SQLITE_JOURNAL_MODE              = WAL
+TIMEOUT                          = 500
+
+[session]
+PROVIDER                         = file
+PROVIDER_CONFIG                  = %(GITEA_WORK_DIR)s/data/sessions
+COOKIE_NAME                      = forgejo_sess
+COOKIE_SECURE                    = false
+SAME_SITE                        = strict
+GC_INTERVAL_TIME                 = 86400
+
+[webhook]
+# Disallow outgoing webhooks to the internet or intranet to prevent SSRF.
+ALLOWED_HOST_LIST                = loopback
+DELIVER_TIMEOUT                  = 5
+
+[mailer]
+ENABLED                          = false
+
+[lfs]
+PATH                             = %(GITEA_WORK_DIR)s/data/lfs
+
+[log]
+MODE                             = console, file
+LEVEL                            = Info
+ROUTER                           = console
+ROOT_PATH                        = %(GITEA_WORK_DIR)s/log

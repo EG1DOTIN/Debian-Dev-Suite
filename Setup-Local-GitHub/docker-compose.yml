@@ -1,0 +1,111 @@
+# ==============================================================================
+# Hardened Forgejo Localhost Deployment (Docker Compose)
+# Strictly bound to 127.0.0.1 (Loopback Only)
+# ==============================================================================
+#
+# GUARANTEES:
+# 1. Zero external network exposure: Ports 3000 and 2222 are mapped exclusively
+#    to 127.0.0.1 on the host. External LAN/WAN devices cannot connect.
+# 2. Strict Offline Privacy: External avatars (Gravatar), CDNs, and telemetry
+#    are disabled via environment overrides.
+# 3. Lockdown Mode: Public registration is closed, sign-in is required to view
+#    any repository, and the web installer wizard is permanently locked.
+#
+# USAGE:
+#   docker compose up -d
+#   docker compose logs -f
+#   docker compose down
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  forgejo:
+    image: codeberg.org/forgejo/forgejo:16.0.5
+    container_name: forgejo-localhost
+    restart: unless-stopped
+    
+    # Run with standard non-root UID/GID
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      
+      # App Basics
+      - FORGEJO__APP_NAME=Localhost Git Forge (Strictly Private)
+      - FORGEJO__RUN_MODE=prod
+      
+      # Server & Network Isolation
+      - FORGEJO__server__PROTOCOL=http
+      - FORGEJO__server__DOMAIN=127.0.0.1
+      - FORGEJO__server__HTTP_ADDR=0.0.0.0
+      - FORGEJO__server__HTTP_PORT=3000
+      - FORGEJO__server__ROOT_URL=http://127.0.0.1:3000/
+      - FORGEJO__server__SSH_DOMAIN=127.0.0.1
+      - FORGEJO__server__SSH_PORT=2222
+      - FORGEJO__server__SSH_LISTEN_HOST=0.0.0.0
+      - FORGEJO__server__OFFLINE_MODE=true
+      - FORGEJO__server__LANDING_PAGE=explore
+      
+      # Service & Privacy Lockdown
+      - FORGEJO__service__DISABLE_REGISTRATION=true
+      - FORGEJO__service__REQUIRE_SIGNIN_VIEW=true
+      - FORGEJO__service__ENABLE_NOTIFY_MAIL=false
+      - FORGEJO__service__ENABLE_CAPTCHA=false
+      - FORGEJO__service__DEFAULT_KEEP_EMAIL_PRIVATE=true
+      - FORGEJO__service__SHOW_USER_EMAIL=false
+      
+      # Avatar & Telemetry Isolation
+      - FORGEJO__picture__DISABLE_GRAVATAR=true
+      - FORGEJO__picture__ENABLE_FEDERATED_AVATAR=false
+      - FORGEJO__openid__ENABLE_OPENID_SIGNIN=false
+      - FORGEJO__openid__ENABLE_OPENID_SIGNUP=false
+      - FORGEJO__federation__ENABLED=false
+      
+      # Security & Install Lock
+      - FORGEJO__security__INSTALL_LOCK=true
+      - FORGEJO__security__REVERSE_PROXY_LIMIT=0
+      - FORGEJO__security__COOKIE_SECURE=false
+      - FORGEJO__security__COOKIE_SAME_SITE=strict
+      
+      # Repository Defaults
+      - FORGEJO__repository__DEFAULT_PRIVATE=true
+      - FORGEJO__repository__ENABLE_PUSH_CREATE_USER=true
+      - FORGEJO__repository__ENABLE_PUSH_CREATE_ORG=true
+      
+      # Database (Embedded SQLite WAL)
+      - FORGEJO__database__DB_TYPE=sqlite3
+      - FORGEJO__database__PATH=/data/forgejo/forgejo.db
+      - FORGEJO__database__SQLITE_JOURNAL_MODE=WAL
+      
+      # Webhook loopback restriction
+      - FORGEJO__webhook__ALLOWED_HOST_LIST=loopback
+
+    ports:
+      # STRICT LOCALHOST BINDING: Format is 127.0.0.1:<host-port>:<container-port>
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:2222:22"
+
+    volumes:
+      - ./forgejo-docker-data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+
+    security_opt:
+      - no-new-privileges:true
+
+    # Restrict container privileges
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+      - FOWNER
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/api/v1/version"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

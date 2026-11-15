@@ -1,0 +1,75 @@
+# Compiled binaries & Python caches
+build/
+__pycache__/
+*.py[cod]
+
+# Model files (large)
+*.gguf
+models/
+
+# Swap and backup files
+*.swp
+*.swo
+*.bak
+*.bak.*
+*.backup
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Trash (old versions of files)
+.Trash_/
+
+# Secrets, Credentials & Environment
+.env
+.env.*
+!.env.example
+credentials.txt
+*.pem
+*.key
+*.p12
+*.pfx
+*.pkcs12
+*.kdbx
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+rclone.conf
+*.rclone.conf
+
+# Local Service State & Data Directories (Forgejo, LibreChat, MongoDB, etc.)
+forgejo-data/
+forgejo-docker-data/
+**/forgejo-data/
+**/forgejo-docker-data/
+LibreChat/
+**/LibreChat/
+librechat-data/
+**/librechat-data/
+mongo_data/
+**/mongo_data/
+node_modules/
+**/node_modules/
+
+# Logs & Diagnostics containing runtime data
+*.log
+logs/
+
+# ai agents
+.agents
+AGENTS.md
+GEMINI.md
+
+# Python Virtual Environments
+.venv/
+venv/
+**/.venv/
+**/venv/
+
+# vs code and settings
+.vscode
+.vscode/
+

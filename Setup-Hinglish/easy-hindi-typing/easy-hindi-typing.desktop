@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Easy Hindi Typing
+GenericName=Hinglish to Hindi Offline Typing
+Comment=100% Offline Hinglish to Hindi Typing App with Realtime Word Suggestions
+Exec=easy-hindi-typing
+Icon=easy-hindi-typing
+Terminal=false
+Categories=Utility;TextEditor;Office;
+Keywords=hindi;hinglish;typing;devanagari;transliteration;
+StartupNotify=true
