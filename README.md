@@ -7,7 +7,7 @@ A modular, **ultra-lightweight, 100% open-source, secure**, and **privacy-focuse
 Designed to turn any machine—from ultra-resource-constrained legacy hardware (e.g., dual-core laptops with 2GB–3GB RAM) to modern multi-core workstations with dedicated GPUs—into a blisteringly fast, distraction-free development environment without the bloat of heavy desktop software.
 
 ```text
-  🏷️ Version: v1.0.0  •  🪶 Ultra-Lightweight (0–50MB RAM)  •  🔓 100% Open-Source (FOSS)  •  🛡️ Secure by Design  •  🔒 Privacy-Focused (0 Telemetry)
+  🪶 Ultra-Lightweight (0–50MB RAM)  •  🔓 100% Open-Source (FOSS)  •  🛡️ Secure by Design  •  🔒 Privacy-Focused (0 Telemetry)
 ```
 
 ---
